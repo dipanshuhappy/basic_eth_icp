@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "canisters": {
+    "basic_eth": {
+      "type": "rust",
+      "package": "basic_eth",
+      "candid": "src/basic_eth/basic_eth.did"
+    }
+  },
+  "defaults": {
+    "build": {
+      "args": "",
+      "packtool": ""
+    }
+  }
+}

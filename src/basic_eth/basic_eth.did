@@ -1,0 +1,16 @@
+type HttpHeader = record { value : text; name : text };
+type HttpResponse = record {
+  status : nat;
+  body : vec nat8;
+  headers : vec HttpHeader;
+};
+type Result = variant { Ok : text; Err : text };
+type TransformArgs = record { context : vec nat8; response : HttpResponse };
+service : {
+  get_eth_address : () -> (Result); 
+  get_eth_balance : () -> (Result);
+  get_eth_gas_price : () -> (Result);
+  send_eth_in_wei : (text, float64) -> (Result);
+  eth_to_wei : (float64) -> (text) query;
+ 
+}
