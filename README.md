@@ -1,4 +1,4 @@
-# Running the Ethereum Interaction Program in Rust
+# Running the Ethereum Interaction Program in ICP
 
 This guide will walk you through setting up your development environment and running a ICP canister program designed for interacting with the Ethereum blockchain, specifically using the Sepolia testnet. 
 
@@ -31,4 +31,17 @@ If the node provider URL in the example code is not working, you'll need to set 
 - **Create a New App**: Once logged in, create a new app. Choose the Sepolia testnet as your network.
 
 - **Get the HTTP URL**: After creating your app, Alchemy will provide you with an HTTP URL. Replace the `URL` constant in your Rust code with this new URL.
+
+6 Deploy canister locally
+```
+sudo dfx deploy
+```
+7. Get Sepolia Testnet Faucets
+   - **Go to deployed canister candid frontend url **
+   - Click on this function get_address to get your address
+     ![image](https://github.com/dipanshuhappy/basic_eth_icp/assets/58115782/f4d1537c-6642-4072-b874-6800e4e281c1)
+   - Go to this website https://sepoliafaucet.com/
+   - And paste in the address which you got from that function
+
+   
 
