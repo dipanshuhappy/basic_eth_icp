@@ -13,11 +13,6 @@ Before you begin, ensure you have a basic understanding of Rust programming and 
 2. **Clone the Repository**: Clone the repository containing the Rust program you want to run.
 
 
-
-3. **Navigate to Your Project**: Use the command line to navigate to your project directory. For example:
-   ```bash
-   sudo dfx start --clean
-   ```
 4. **Start the Internet Computer Replica**: Start the Internet Computer replica by running the following command:
    ```
    sudo dfx start --clean
