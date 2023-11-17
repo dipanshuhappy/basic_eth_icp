@@ -37,7 +37,7 @@ If the node provider URL in the example code is not working, you'll need to set 
 sudo dfx deploy
 ```
 7. Get Sepolia Testnet Faucets
-   - **Go to deployed canister candid frontend url **
+   - Go to deployed canister candid frontend url
    - Click on this function get_address to get your address
      ![image](https://github.com/dipanshuhappy/basic_eth_icp/assets/58115782/f4d1537c-6642-4072-b874-6800e4e281c1)
    - Go to this website https://sepoliafaucet.com/
