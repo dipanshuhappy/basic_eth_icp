@@ -51,7 +51,6 @@ async fn get_eth_gas_price() -> Result<String, String> {
         Err(e) => { return Err(e.to_string()) },
     };
     let gas_price = w3.eth().gas_price().await.map_err(|e| format!("get gas price failed: {}", e))?;
-    ic_cdk::println!("gas price: {}", gas_price);
     Ok(format!("{} WEI", gas_price))
 }
 
@@ -60,10 +59,10 @@ async fn get_eth_gas_price() -> Result<String, String> {
 #[update]
 #[candid_method(update,rename="get_eth_address")]
 async fn get_eth_address() -> Result<String,String> {
-    if(ADDRESS.with(|addr| { addr.borrow().len() > 0 })) {
-        return Ok(ADDRESS.with(|addr| { addr.borrow().clone() }));
+    if !ADDRESS.with(|addr| addr.borrow().is_empty()) {
+        return Ok(ADDRESS.with(|addr| addr.borrow().clone()));
     }
-    let address =  match get_eth_addr(None, None, KEY_NAME.to_string()).await {
+    let address = match get_eth_addr(None, None, KEY_NAME.to_string()).await {
         Ok(addr) => { addr },
         Err(e) => { return Err(e) },
     };
@@ -71,7 +70,6 @@ async fn get_eth_address() -> Result<String,String> {
         *addr.borrow_mut() = format!("0x{}",hex::encode(address));
     });
     Ok(format!("0x{}",hex::encode(address)))
-
 }
 
 /// Retrieves the balance of the Ethereum address in Ether.
@@ -87,7 +85,6 @@ async fn get_eth_balance() -> Result<String, String> {
     let balance = w3.eth().balance(Address::from_str(&addr).unwrap(), None).await.map_err(|e| format!("get balance failed: {}", e))?;
     let wei_str: String = balance.to_string();
     let wei: U256 = wei_str.parse::<U256>().unwrap();
-    let wei_as_u128: u128 = wei.as_u128();
     let eth: f64 = (wei_str.parse::<f64>().unwrap()) / 1e18;
     Ok(format!("{} ETH", eth ))
 }
@@ -97,8 +94,8 @@ async fn get_eth_balance() -> Result<String, String> {
 #[query(name="eth_to_wei")]
 #[candid_method(query, rename = "eth_to_wei")]
 async fn eth_to_wei(eth: f64) -> Result<String, String> {
-    let wei = eth * 1e18;
-    Ok(format!("{}",wei as u64))
+    let wei = (eth * 1e18) as u64;
+    Ok(format!("{}", wei))
 }
 
 /// Sends Ether to another Ethereum address.
@@ -143,7 +140,6 @@ async fn send_eth_in_ether(to: String, eth_value: f64, nonce: Option<u64>) -> Re
         .map_err(|e| format!("sign tx error: {}", e))?;
     match w3.eth().send_raw_transaction(signed_tx.raw_transaction).await {
         Ok(txhash) => { 
-            ic_cdk::println!("txhash: {}", hex::encode(txhash.0));
             Ok(format!("https://sepolia.etherscan.io/tx/{}", hex::encode(txhash.0)))
         },
         Err(_e) => { Ok(hex::encode(signed_tx.message_hash)) },
