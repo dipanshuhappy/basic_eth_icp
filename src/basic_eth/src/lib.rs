@@ -142,10 +142,10 @@ async fn send_eth_in_ether(to: String, eth_value: f64, nonce: Option<u64>) -> Re
         .map_err(|e| format!("sign tx error: {}", e))?;
     match w3.eth().send_raw_transaction(signed_tx.raw_transaction).await {
         Ok(txhash) => { 
-            ic_cdk::println!("txhash: {}", hex::encode(txhash.0));
-            Ok(format!("https://sepolia.etherscan.io/tx/{}", hex::encode(txhash.0)))
+            ic_cdk::println!("txhash: 0x{}", hex::encode(txhash.0));
+            Ok(format!("https://sepolia.etherscan.io/tx/0x{}", hex::encode(txhash.0)))
         },
-        Err(_e) => { Err(hex::encode(signed_tx.message_hash)) },
+        Err(e) => { Err(format!("Error:{}", e)) },
     }
     
 }
