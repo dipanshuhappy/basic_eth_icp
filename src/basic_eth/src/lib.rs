@@ -5,7 +5,7 @@
 //! obtaining Ethereum addresses and balances, converting Ethereum to Wei (the smallest denomination of Ether),
 //! and sending Ether in transactions. This module uses the `ic_web3` crate, which is a Rust library for interacting with Ethereum.
 
-use candid::{candid_method, Principal};
+use candid::candid_method;
 use ic_cdk::api::management_canister::http_request::{HttpResponse, TransformArgs};
 use ic_cdk_macros::{self, update, query};
 use std::str::FromStr;
@@ -14,19 +14,17 @@ use ic_web3::transports::ICHttp;
 use ic_web3::Web3;
 use ic_web3::ic::{get_eth_addr, KeyInfo};
 use ic_web3::{
-    contract::{Contract, Options},
-    ethabi::ethereum_types::{U64, U256},
-    types::{Address, TransactionParameters, BlockId},
+    ethabi::ethereum_types::U256,
+    types::{Address, TransactionParameters},
 };
 use std::cell::RefCell;
 
-/// Thread-local storage for caching an Ethereum address.
 thread_local! {
     static ADDRESS : RefCell<String> = RefCell::new("".to_string());
 }
 
 /// The HTTP URL of an Ethereum node.
-const URL: &str = "https://eth-sepolia.g.alchemy.com/v2/OP756g5QhMTm6XWPpZV-TeV_kl5ZC9_0";
+const URL: &str = "https://eth-sepolia.g.alchemy.com/v2/YPe0Rex7dk40_XbWsn0pdm4UysevzMtq";
 /// The unique identifier for the Ethereum network being used.
 const CHAIN_ID: u64 = 11155111;
 /// A string constant representing the name of a key, used for cryptographic operations.
@@ -60,7 +58,7 @@ async fn get_eth_gas_price() -> Result<String, String> {
 #[update]
 #[candid_method(update,rename="get_eth_address")]
 async fn get_eth_address() -> Result<String,String> {
-    if(ADDRESS.with(|addr| { addr.borrow().len() > 0 })) {
+    if ADDRESS.with(|addr| { addr.borrow().len() > 0 }) {
         return Ok(ADDRESS.with(|addr| { addr.borrow().clone() }));
     }
     let address =  match get_eth_addr(None, None, KEY_NAME.to_string()).await {
@@ -86,8 +84,6 @@ async fn get_eth_balance() -> Result<String, String> {
     };
     let balance = w3.eth().balance(Address::from_str(&addr).unwrap(), None).await.map_err(|e| format!("get balance failed: {}", e))?;
     let wei_str: String = balance.to_string();
-    let wei: U256 = wei_str.parse::<U256>().unwrap();
-    let wei_as_u128: u128 = wei.as_u128();
     let eth: f64 = (wei_str.parse::<f64>().unwrap()) / 1e18;
     Ok(format!("{} ETH", eth ))
 }
@@ -107,7 +103,11 @@ async fn eth_to_wei(eth: f64) -> Result<String, String> {
 #[update(name = "send_eth_in_ether")]
 #[candid_method(update, rename = "send_eth_in_ether")]
 async fn send_eth_in_ether(to: String, eth_value: f64, nonce: Option<u64>) -> Result<String, String> {
+    if eth_value <= f64::from(0){
+        return Err(format!("value={} can only be a positive number", eth_value))
+    }
     let value = (eth_value * 1e18) as u64;
+    let to = Address::from_str(&to).map_err(|e| format!("to='{}' is not a valid ethereum address. Error={}", to, e))?;
     let derivation_path = vec![ic_cdk::id().as_slice().to_vec()];
     let key_info = KeyInfo{ derivation_path: derivation_path, key_name: KEY_NAME.to_string(), ecdsa_sign_cycles: None };
     let from_addr = get_eth_addr(None, None, KEY_NAME.to_string())
@@ -128,7 +128,6 @@ async fn send_eth_in_ether(to: String, eth_value: f64, nonce: Option<u64>) -> Re
     };
         
     ic_cdk::println!("canister eth address {} tx count: {}", hex::encode(from_addr), tx_count);
-    let to = Address::from_str(&to).unwrap();
     let tx = TransactionParameters {
         to: Some(to),
         nonce: Some(tx_count),
@@ -146,6 +145,10 @@ async fn send_eth_in_ether(to: String, eth_value: f64, nonce: Option<u64>) -> Re
             ic_cdk::println!("txhash: {}", hex::encode(txhash.0));
             Ok(format!("https://sepolia.etherscan.io/tx/{}", hex::encode(txhash.0)))
         },
-        Err(_e) => { Ok(hex::encode(signed_tx.message_hash)) },
+        Err(_e) => { Err(hex::encode(signed_tx.message_hash)) },
     }
+    
 }
+
+// need this to generate candid
+ic_cdk::export_candid!();

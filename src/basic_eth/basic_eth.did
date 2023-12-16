@@ -7,10 +7,10 @@ type HttpResponse = record {
 type Result = variant { Ok : text; Err : text };
 type TransformArgs = record { context : vec nat8; response : HttpResponse };
 service : {
-  get_eth_address : () -> (Result); 
+  eth_to_wei : (float64) -> (Result) query;
+  get_eth_address : () -> (Result);
   get_eth_balance : () -> (Result);
   get_eth_gas_price : () -> (Result);
-  send_eth_in_wei : (text, float64) -> (Result);
-  eth_to_wei : (float64) -> (text) query;
- 
+  send_eth_in_ether : (text, float64, opt nat64) -> (Result);
+  transform : (TransformArgs) -> (HttpResponse) query;
 }
